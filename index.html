@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- MathJax untuk rendering rumus Matematika/IPA/Arab -->
   <script>
     window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
   </script>
@@ -15,7 +14,6 @@
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
     .no-select { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-    /* Proteksi layar kabur saat terdeteksi percobaan screenshot */
     body.privacy-blur #app-container { filter: blur(18px); pointer-events: none; }
     @media print { body { display: none !important; } }
   </style>
@@ -31,9 +29,7 @@
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed top-4 right-4 z-50 hidden max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border-l-4 border-emerald-500 text-sm transition-all"></div>
 
-  <!-- =====================================================================
-       MODAL LOCK SCREEN (ANTI CURANG TERPICU)
-       ===================================================================== -->
+  <!-- MODAL LOCK SCREEN (ANTI CURANG) -->
   <div id="lock-screen" class="fixed inset-0 bg-red-950/95 z-50 hidden flex-col items-center justify-center p-6 text-center text-white">
     <div class="w-20 h-20 bg-red-600/30 border-2 border-red-400 rounded-full flex items-center justify-center mb-4 animate-pulse">
       <i class="fa-solid fa-lock text-4xl text-red-300"></i>
@@ -55,7 +51,7 @@
   <div id="app-container" class="min-h-screen flex flex-col">
 
     <!-- ===================================================================
-         VIEW 1: HALAMAN LOGIN (DENGAN AUTOCOMPLETE SISWA)
+         VIEW 1: HALAMAN LOGIN
          =================================================================== -->
     <section id="view-login" class="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900">
       <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
@@ -68,7 +64,6 @@
         </div>
 
         <div class="p-6">
-          <!-- Switch Role -->
           <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl mb-6">
             <button type="button" id="tab-role-siswa" onclick="setLoginRole('SISWA')" class="py-2.5 text-sm font-bold rounded-lg bg-white text-emerald-800 shadow-xs transition">
               <i class="fa-solid fa-user-graduate mr-1.5"></i> Peserta Didik
@@ -79,7 +74,6 @@
           </div>
 
           <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
-            <!-- Input Autocomplete Siswa / Username Guru -->
             <div class="relative" id="wrapper-login-user">
               <label id="label-username" class="block text-xs font-bold text-slate-600 uppercase mb-1">Cari Nama / NISN Siswa</label>
               <div class="relative">
@@ -91,13 +85,11 @@
                 <input type="hidden" id="login-username">
               </div>
 
-              <!-- Info Siswa Terpilih -->
               <div id="selected-siswa-badge" class="hidden mt-1.5 bg-emerald-50 border border-emerald-200 text-emerald-900 px-3 py-1.5 rounded-lg text-xs flex items-center justify-between">
                 <span><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong id="badge-siswa-text">-</strong></span>
                 <button type="button" onclick="resetPilihanSiswa()" class="text-red-600 font-bold hover:underline ml-2">Ganti</button>
               </div>
 
-              <!-- Dropdown Autocomplete Siswa -->
               <ul id="autocomplete-siswa-list" class="hidden absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-52 overflow-y-auto divide-y divide-slate-100 text-sm"></ul>
             </div>
 
@@ -145,7 +137,6 @@
       </header>
 
       <main class="max-w-5xl mx-auto w-full p-4 md:p-6 space-y-6">
-        <!-- Kartu Profil Siswa -->
         <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <div class="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-xl font-extrabold">
@@ -165,7 +156,6 @@
           </div>
         </div>
 
-        <!-- Daftar Ujian Aktif -->
         <div>
           <div class="flex items-center justify-between mb-3">
             <h4 class="font-bold text-slate-700 text-base">Daftar Ujian Tersedia</h4>
@@ -192,10 +182,9 @@
     </div>
 
     <!-- ===================================================================
-         VIEW 3: LEMBAR SOAL CAT (NO-SELECT + ANTI CURANG)
+         VIEW 3: LEMBAR SOAL CAT
          =================================================================== -->
     <section id="view-ujian" class="hidden flex-1 flex-col no-select bg-slate-100">
-      <!-- Top Bar Ujian -->
       <header class="bg-emerald-950 text-white sticky top-0 z-30 shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <div class="min-w-0">
@@ -204,19 +193,16 @@
           </div>
 
           <div class="flex items-center gap-2 md:gap-4 shrink-0">
-            <!-- Kontrol Ukuran Font -->
             <div class="hidden sm:flex items-center bg-emerald-900 rounded-lg p-1 text-xs">
               <button onclick="ubahUkuranFont(-1)" class="px-2 py-1 hover:bg-emerald-800 rounded-sm font-bold">A-</button>
               <button onclick="ubahUkuranFont(1)" class="px-2 py-1 hover:bg-emerald-800 rounded-sm font-bold">A+</button>
             </div>
 
-            <!-- Indikator Pelanggaran -->
             <div class="bg-red-950 border border-red-700 px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5" title="Batas Pelanggaran">
               <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
               <span><strong id="ujian-pelanggaran-count">0</strong>/<span id="ujian-max-curang">3</span></span>
             </div>
 
-            <!-- Countdown Timer -->
             <div class="bg-slate-900 border border-emerald-500/40 px-3 py-1.5 rounded-lg font-mono font-extrabold text-sm md:text-base text-amber-400 flex items-center gap-1.5">
               <i class="fa-regular fa-clock text-xs"></i>
               <span id="ujian-timer">00:00:00</span>
@@ -225,9 +211,7 @@
         </div>
       </header>
 
-      <!-- Konten Soal & Navigasi -->
       <main class="max-w-7xl mx-auto w-full flex-1 p-4 grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <!-- Kolom Kiri: Area Pertanyaan (8 Kolom) -->
         <div class="lg:col-span-8 flex flex-col">
           <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 md:p-7 flex-1 flex flex-col justify-between">
             <div>
@@ -238,17 +222,12 @@
                 <span id="soal-tipe-badge" class="text-xs font-semibold text-slate-400">Pilihan Ganda</span>
               </div>
 
-              <!-- Teks & Gambar Soal -->
               <div id="area-konten-soal" class="text-base leading-relaxed space-y-4">
                 <div id="soal-gambar-container" class="hidden">
                   <img id="soal-gambar" src="" alt="Gambar Soal" class="max-h-64 rounded-xl border border-slate-200 object-contain">
                 </div>
                 <div id="soal-pertanyaan" class="font-medium text-slate-800 whitespace-pre-line"></div>
-
-                <!-- Pilihan Ganda -->
                 <div id="soal-opsi-pg" class="space-y-3 pt-3"></div>
-
-                <!-- Input Esai (Jika Tipe_Soal === 'ESAI') -->
                 <div id="soal-opsi-esai" class="hidden pt-3">
                   <textarea id="input-jawaban-esai" rows="5" oninput="simpanJawabanEsai(this.value)" placeholder="Ketik jawaban uraian Anda di sini..."
                     class="w-full border-2 border-slate-200 focus:border-emerald-600 rounded-xl p-3.5 text-sm outline-hidden"></textarea>
@@ -256,7 +235,6 @@
               </div>
             </div>
 
-            <!-- Tombol Navigasi Bawah -->
             <div class="flex flex-wrap items-center justify-between gap-2 pt-6 mt-6 border-t border-slate-100">
               <button id="btn-prev" onclick="pindahSoal(currentIndex - 1)" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs md:text-sm transition">
                 <i class="fa-solid fa-chevron-left mr-1"></i> Sebelumnya
@@ -277,7 +255,6 @@
           </div>
         </div>
 
-        <!-- Kolom Kanan: Navigasi Nomor Soal (4 Kolom) -->
         <div class="lg:col-span-4">
           <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 sticky top-20">
             <h3 class="font-bold text-sm text-slate-700 mb-3">Navigasi Nomor Soal</h3>
@@ -342,7 +319,7 @@
     </section>
 
     <!-- ===================================================================
-         VIEW 5: PANEL GURU & ADMIN (KELOLA UJIAN, SOAL, ANTI-CURANG, NILAI)
+         VIEW 5: PANEL GURU & ADMIN
          =================================================================== -->
     <section id="view-guru-dashboard" class="hidden flex-1 flex-col">
       <header class="bg-slate-900 text-white shadow-md">
@@ -361,7 +338,6 @@
           </button>
         </div>
 
-        <!-- Menu Tab Guru -->
         <div class="bg-slate-800 border-t border-slate-700">
           <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto gap-1 text-xs md:text-sm font-bold">
             <button onclick="switchGuruTab('jadwal')" id="gtab-jadwal" class="guru-tab px-4 py-3 border-b-2 border-amber-400 text-amber-400 whitespace-nowrap">
@@ -413,16 +389,16 @@
 
               <!-- Input Autocomplete 16 Mapel -->
               <div class="relative" id="wrapper-mapel-autocomplete">
-                <label class="block text-xs font-bold text-slate-600 mb-1">Muatan Pelajaran (Ketik untuk mencari)</label>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Muatan Pelajaran (Klik atau ketik untuk mencari)</label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-book"></i></span>
                   <input type="text" id="search-mapel-input" autocomplete="off" required
                     oninput="filterAutocompleteMapel(this.value)" onfocus="filterAutocompleteMapel(this.value)"
-                    placeholder="Ketik nama mapel (misal: Matematika, Fikih, Koding)..."
+                    placeholder="Klik atau ketik nama mapel..."
                     class="w-full pl-9 pr-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 outline-hidden">
                   <input type="hidden" id="new-mapel">
                 </div>
-                <ul id="autocomplete-mapel-list" class="hidden absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs"></ul>
+                <ul id="autocomplete-mapel-list" class="hidden absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto divide-y divide-slate-100 text-xs"></ul>
               </div>
 
               <div class="grid grid-cols-3 gap-2">
@@ -481,7 +457,7 @@
           </div>
         </div>
 
-        <!-- TAB 2: UNGGAH SOAL (SATUAN & MASSAL EXCEL) -->
+        <!-- TAB 2: UNGGAH SOAL -->
         <div id="gpanel-soal" class="guru-panel hidden space-y-6">
           <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 mb-5">
@@ -496,7 +472,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Form Input Satuan -->
               <form onsubmit="handleUploadSoalSatuan(event)" class="space-y-3 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <h4 class="font-bold text-emerald-900"><i class="fa-solid fa-pen-to-square mr-1"></i> Metode A: Input Soal Satuan</h4>
                 <div class="grid grid-cols-2 gap-3">
@@ -540,7 +515,6 @@
                 </button>
               </form>
 
-              <!-- Form Paste Massal dari Excel -->
               <div class="space-y-3 text-sm bg-amber-50/70 p-4 rounded-xl border border-amber-200 flex flex-col justify-between">
                 <div class="space-y-3">
                   <h4 class="font-bold text-amber-950"><i class="fa-solid fa-file-excel mr-1 text-emerald-700"></i> Metode B: Copy-Paste Massal dari Excel</h4>
@@ -560,7 +534,7 @@
           </div>
         </div>
 
-        <!-- TAB 3: MONITOR ANTI-CURANG & BUKA KUNCI -->
+        <!-- TAB 3: MONITOR ANTI-CURANG -->
         <div id="gpanel-monitor" class="guru-panel hidden bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
@@ -589,7 +563,7 @@
           </div>
         </div>
 
-        <!-- TAB 4: OLAH NILAI & EXPORT -->
+        <!-- TAB 4: OLAH NILAI -->
         <div id="gpanel-nilai" class="guru-panel hidden space-y-5">
           <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
             <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
@@ -613,7 +587,6 @@
               </button>
             </div>
 
-            <!-- Statistik Ringkas -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 text-center">
               <div class="bg-slate-50 border rounded-xl p-3">
                 <p class="text-[11px] text-slate-500 font-bold">Total Peserta</p>
@@ -633,7 +606,6 @@
               </div>
             </div>
 
-            <!-- Tabel Olah Nilai -->
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs border-collapse">
                 <thead>
@@ -663,7 +635,27 @@
        ======================================================================= -->
   <script>
     // >>> TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI <<<
-    const API_URL = "https://script.google.com/macros/s/AKfycbwH3wrG1mkveQ6DKuPB8DG24PC9yVd-vAz3mONIdMK9b1kCp4oqR_uwyEqZCgCYg-Id/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxzvm9mgIr6WF9wGpTDbBI2SnRtFH2Kv7yy3mL6wW1a0dFOm0PifQOgKUIko-ummayw/exec";
+
+    // DATA CADANGAN 16 MAPEL (LANGSUNG TERSEDIA DI PANEL GURU)
+    const DEFAULT_MAPEL_LIST = [
+      { No: 1, Kode_Mapel: "QH", Nama_Mapel: "Al-Qur'an Hadis" },
+      { No: 2, Kode_Mapel: "AA", Nama_Mapel: "Akidah Akhlak" },
+      { No: 3, Kode_Mapel: "FK", Nama_Mapel: "Fikih" },
+      { No: 4, Kode_Mapel: "SKI", Nama_Mapel: "Sejarah Kebudayaan Islam (SKI)" },
+      { No: 5, Kode_Mapel: "PKN", Nama_Mapel: "Pendidikan Pancasila / PKn" },
+      { No: 6, Kode_Mapel: "BIN", Nama_Mapel: "Bahasa Indonesia" },
+      { No: 7, Kode_Mapel: "BAR", Nama_Mapel: "Bahasa Arab" },
+      { No: 8, Kode_Mapel: "MTK", Nama_Mapel: "Matematika" },
+      { No: 9, Kode_Mapel: "IPA", Nama_Mapel: "Ilmu Pengetahuan Alam (IPA)" },
+      { No: 10, Kode_Mapel: "IPS", Nama_Mapel: "Ilmu Pengetahuan Sosial (IPS)" },
+      { No: 11, Kode_Mapel: "BIG", Nama_Mapel: "Bahasa Inggris" },
+      { No: 12, Kode_Mapel: "PJOK", Nama_Mapel: "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)" },
+      { No: 13, Kode_Mapel: "INF", Nama_Mapel: "Informatika/ Prakarya" },
+      { No: 14, Kode_Mapel: "SBK", Nama_Mapel: "Seni Budaya (Seni Musik, Rupa, Tari, Teater)" },
+      { No: 15, Kode_Mapel: "MULOK", Nama_Mapel: "Muatan Lokal (Bahasa Daerah, Aswaja/Ke-NU-an, dll.)" },
+      { No: 16, Kode_Mapel: "PIL", Nama_Mapel: "Mata Pelajaran Pilihan (misal: Koding & Kecerdasan Artifisial)" }
+    ];
 
     // STATE GLOBAL
     let currentRoleLogin = "SISWA";
@@ -680,9 +672,9 @@
     let fontSizeLevel = 16;
     let dataNilaiCache = [];
     let masterSiswaList = [];
-    let masterMapelList = [];
+    let masterMapelList = [...DEFAULT_MAPEL_LIST];
 
-    // MUAT CACHE SISWA & 16 MAPEL SAAT HALAMAN DIBUKA
+    // MUAT CACHE SISWA & MAPEL SAAT HALAMAN DIBUKA
     window.addEventListener("DOMContentLoaded", async () => {
       if (API_URL.includes("GANTI_DENGAN")) return;
       try {
@@ -692,11 +684,11 @@
         });
         const json = await res.json();
         if (json.status === "OK") {
-          masterSiswaList = json.siswa || [];
-          masterMapelList = json.mapel || [];
+          if (json.siswa && json.siswa.length > 0) masterSiswaList = json.siswa;
+          if (json.mapel && json.mapel.length > 0) masterMapelList = json.mapel;
         }
       } catch (e) {
-        console.warn("Gagal memuat cache autocomplete:", e);
+        console.warn("Menggunakan cache lokal mapel:", e);
       }
     });
 
@@ -710,7 +702,6 @@
       }
     });
 
-    // HELPER UI
     function showLoader(show, text = "Memproses data...") {
       const el = document.getElementById("loader");
       document.getElementById("loader-text").innerText = text;
@@ -798,14 +789,14 @@
       }
 
       const hasil = masterSiswaList.filter(s =>
-        s.nama.toLowerCase().includes(q) || s.nisn.includes(q)
+        String(s.nama).toLowerCase().includes(q) || String(s.nisn).includes(q)
       );
 
       if (hasil.length === 0) {
         listEl.innerHTML = `<li class="px-4 py-2.5 text-xs text-slate-400">Nama/NISN tidak ditemukan.</li>`;
       } else {
         listEl.innerHTML = hasil.map(s => `
-          <li onclick="pilihSiswaLogin('${s.nisn}', '${s.nama.replace(/'/g, "\\'")}', '${s.kelas}')"
+          <li onclick="pilihSiswaLogin('${s.nisn}', '${String(s.nama).replace(/'/g, "\\'")}', '${s.kelas}')"
               class="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer flex items-center justify-between transition">
             <div>
               <p class="font-bold text-slate-800 text-xs">${s.nama}</p>
@@ -851,9 +842,8 @@
       let username = document.getElementById("login-username").value.trim();
       const password = document.getElementById("login-password").value.trim();
 
-      // Jika siswa mengetik nama persis tanpa mengklik dropdown, otomatis cocokkan ke NISN
       if (currentRoleLogin === "SISWA" && masterSiswaList.length > 0) {
-        const cocokNama = masterSiswaList.find(s => s.nama.toLowerCase() === username.toLowerCase());
+        const cocokNama = masterSiswaList.find(s => String(s.nama).toLowerCase() === username.toLowerCase());
         if (cocokNama) username = cocokNama.nisn;
       }
 
@@ -1151,7 +1141,7 @@
     }
 
     // =========================================================================
-    // 4. ENGINE ANTI-CURANG (SCREENSHOT, PINDAH TAB & KUNCI LAYAR)
+    // 4. ENGINE ANTI-CURANG
     // =========================================================================
     function aktifkanFullscreen() {
       const el = document.documentElement;
@@ -1257,7 +1247,7 @@
     });
 
     // =========================================================================
-    // 5. PANEL GURU & ADMIN (TERMASUK AUTOCOMPLETE 16 MAPEL)
+    // 5. PANEL GURU & ADMIN (AUTOCOMPLETE 16 MAPEL LANGSUNG AKTIF)
     // =========================================================================
     function switchGuruTab(tabName) {
       document.querySelectorAll(".guru-panel").forEach(p => p.classList.add("hidden"));
@@ -1275,26 +1265,23 @@
     }
 
     async function initPanelGuru() {
-      if (masterMapelList.length === 0) {
-        const resMapel = await callAPI({ action: "getMapel" }, "Memuat daftar 16 mapel...");
-        masterMapelList = resMapel.data || [];
-      }
       loadDataGuru();
     }
 
     function filterAutocompleteMapel(keyword) {
       const listEl = document.getElementById("autocomplete-mapel-list");
-      const q = keyword.trim().toLowerCase();
+      const q = String(keyword || "").trim().toLowerCase();
 
       const hasil = masterMapelList.filter(m =>
-        m.Nama_Mapel.toLowerCase().includes(q) || m.Kode_Mapel.toLowerCase().includes(q)
+        String(m.Nama_Mapel || "").toLowerCase().includes(q) ||
+        String(m.Kode_Mapel || "").toLowerCase().includes(q)
       );
 
       if (hasil.length === 0) {
         listEl.innerHTML = `<li class="px-3 py-2 text-slate-400">Mata pelajaran tidak ditemukan.</li>`;
       } else {
         listEl.innerHTML = hasil.map(m => `
-          <li onclick="pilihMapelGuru('${m.Kode_Mapel}', '${m.Nama_Mapel.replace(/'/g, "\\'")}')"
+          <li onclick="pilihMapelGuru('${m.Kode_Mapel}', '${String(m.Nama_Mapel).replace(/'/g, "\\'")}')"
               class="px-3 py-2 hover:bg-emerald-50 cursor-pointer flex items-center justify-between">
             <span class="font-semibold text-slate-800">${m.No}. ${m.Nama_Mapel}</span>
             <span class="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-sm font-bold">${m.Kode_Mapel}</span>
@@ -1346,10 +1333,9 @@
       let kodeMapel = document.getElementById("new-mapel").value;
       const ketikanMapel = document.getElementById("search-mapel-input").value.trim().toLowerCase();
 
-      // Jika guru mengetik tanpa mengklik daftar dropdown, cocokkan otomatis
       if (!kodeMapel && ketikanMapel) {
         const cocok = masterMapelList.find(m =>
-          m.Nama_Mapel.toLowerCase().includes(ketikanMapel) || m.Kode_Mapel.toLowerCase() === ketikanMapel
+          String(m.Nama_Mapel).toLowerCase().includes(ketikanMapel) || String(m.Kode_Mapel).toLowerCase() === ketikanMapel
         );
         if (cocok) kodeMapel = cocok.Kode_Mapel;
       }
