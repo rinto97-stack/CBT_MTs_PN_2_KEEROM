@@ -55,7 +55,7 @@
   <div id="app-container" class="min-h-screen flex flex-col">
 
     <!-- ===================================================================
-         VIEW 1: HALAMAN LOGIN
+         VIEW 1: HALAMAN LOGIN (DENGAN AUTOCOMPLETE SISWA)
          =================================================================== -->
     <section id="view-login" class="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900">
       <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
@@ -79,13 +79,26 @@
           </div>
 
           <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
-            <div>
-              <label id="label-username" class="block text-xs font-bold text-slate-600 uppercase mb-1">NISN Siswa</label>
+            <!-- Input Autocomplete Siswa / Username Guru -->
+            <div class="relative" id="wrapper-login-user">
+              <label id="label-username" class="block text-xs font-bold text-slate-600 uppercase mb-1">Cari Nama / NISN Siswa</label>
               <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-id-card"></i></span>
-                <input type="text" id="login-username" required placeholder="Masukkan 10 digit NISN"
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" id="search-user-input" autocomplete="off" required
+                  oninput="handleKetikUser(this.value)" onfocus="handleKetikUser(this.value)"
+                  placeholder="Ketik nama Anda (misal: Anisa)..."
                   class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-hidden">
+                <input type="hidden" id="login-username">
               </div>
+
+              <!-- Info Siswa Terpilih -->
+              <div id="selected-siswa-badge" class="hidden mt-1.5 bg-emerald-50 border border-emerald-200 text-emerald-900 px-3 py-1.5 rounded-lg text-xs flex items-center justify-between">
+                <span><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong id="badge-siswa-text">-</strong></span>
+                <button type="button" onclick="resetPilihanSiswa()" class="text-red-600 font-bold hover:underline ml-2">Ganti</button>
+              </div>
+
+              <!-- Dropdown Autocomplete Siswa -->
+              <ul id="autocomplete-siswa-list" class="hidden absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-52 overflow-y-auto divide-y divide-slate-100 text-sm"></ul>
             </div>
 
             <div>
@@ -397,10 +410,21 @@
                   </select>
                 </div>
               </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Muatan Pelajaran (16 Mapel)</label>
-                <select id="new-mapel" class="w-full border rounded-xl px-3 py-2"></select>
+
+              <!-- Input Autocomplete 16 Mapel -->
+              <div class="relative" id="wrapper-mapel-autocomplete">
+                <label class="block text-xs font-bold text-slate-600 mb-1">Muatan Pelajaran (Ketik untuk mencari)</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-book"></i></span>
+                  <input type="text" id="search-mapel-input" autocomplete="off" required
+                    oninput="filterAutocompleteMapel(this.value)" onfocus="filterAutocompleteMapel(this.value)"
+                    placeholder="Ketik nama mapel (misal: Matematika, Fikih, Koding)..."
+                    class="w-full pl-9 pr-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 outline-hidden">
+                  <input type="hidden" id="new-mapel">
+                </div>
+                <ul id="autocomplete-mapel-list" class="hidden absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs"></ul>
               </div>
+
               <div class="grid grid-cols-3 gap-2">
                 <div>
                   <label class="block text-xs font-bold text-slate-600 mb-1">Durasi (Menit)</label>
@@ -635,11 +659,11 @@
   </div>
 
   <!-- =======================================================================
-       JAVASCRIPT LOGIC & ANTI-CURANG ENGINE
+       JAVASCRIPT LOGIC, AUTOCOMPLETE & ANTI-CURANG ENGINE
        ======================================================================= -->
   <script>
     // >>> TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI <<<
-    const API_URL = "https://script.google.com/macros/s/AKfycbxAJi-0XouFGHI2tILAzLUbEMh951bOWyFT-uT0FfHP83wZu6GFALr8GD9uH9m27sfw/exec";
+    const API_URL = "GANTI_DENGAN_URL_WEB_APP_ANDA";
 
     // STATE GLOBAL
     let currentRoleLogin = "SISWA";
@@ -655,6 +679,36 @@
     let ujianSedangBerjalan = false;
     let fontSizeLevel = 16;
     let dataNilaiCache = [];
+    let masterSiswaList = [];
+    let masterMapelList = [];
+
+    // MUAT CACHE SISWA & 16 MAPEL SAAT HALAMAN DIBUKA
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (API_URL.includes("GANTI_DENGAN")) return;
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "getMasterData" })
+        });
+        const json = await res.json();
+        if (json.status === "OK") {
+          masterSiswaList = json.siswa || [];
+          masterMapelList = json.mapel || [];
+        }
+      } catch (e) {
+        console.warn("Gagal memuat cache autocomplete:", e);
+      }
+    });
+
+    // TUTUP DROPDOWN AUTOCOMPLETE JIKA KLIK DI LUAR AREA
+    document.addEventListener("click", (e) => {
+      if (!document.getElementById("wrapper-login-user")?.contains(e.target)) {
+        document.getElementById("autocomplete-siswa-list")?.classList.add("hidden");
+      }
+      if (!document.getElementById("wrapper-mapel-autocomplete")?.contains(e.target)) {
+        document.getElementById("autocomplete-mapel-list")?.classList.add("hidden");
+      }
+    });
 
     // HELPER UI
     function showLoader(show, text = "Memproses data...") {
@@ -701,26 +755,83 @@
     }
 
     // =========================================================================
-    // 1. LOGIN & LOGOUT
+    // 1. LOGIN & AUTOCOMPLETE SISWA
     // =========================================================================
     function setLoginRole(role) {
       currentRoleLogin = role;
       const btnSiswa = document.getElementById("tab-role-siswa");
       const btnGuru = document.getElementById("tab-role-guru");
       const lblUser = document.getElementById("label-username");
-      const inpUser = document.getElementById("login-username");
+      const inpSearch = document.getElementById("search-user-input");
+
+      resetPilihanSiswa();
 
       if (role === "SISWA") {
         btnSiswa.className = "py-2.5 text-sm font-bold rounded-lg bg-white text-emerald-800 shadow-xs transition";
         btnGuru.className = "py-2.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-700 transition";
-        lblUser.innerText = "NISN Siswa";
-        inpUser.placeholder = "Masukkan 10 digit NISN";
+        lblUser.innerText = "Cari Nama / NISN Siswa";
+        inpSearch.placeholder = "Ketik nama Anda (misal: Anisa)...";
       } else {
         btnGuru.className = "py-2.5 text-sm font-bold rounded-lg bg-white text-emerald-800 shadow-xs transition";
         btnSiswa.className = "py-2.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-700 transition";
         lblUser.innerText = "Username Guru / Admin";
-        inpUser.placeholder = "Masukkan username";
+        inpSearch.placeholder = "Masukkan username guru/admin";
       }
+    }
+
+    function handleKetikUser(keyword) {
+      const hiddenUser = document.getElementById("login-username");
+      const listEl = document.getElementById("autocomplete-siswa-list");
+
+      if (currentRoleLogin === "GURU") {
+        hiddenUser.value = keyword.trim();
+        listEl.classList.add("hidden");
+        return;
+      }
+
+      hiddenUser.value = keyword.trim();
+      const q = keyword.trim().toLowerCase();
+
+      if (!q || masterSiswaList.length === 0) {
+        listEl.classList.add("hidden");
+        return;
+      }
+
+      const hasil = masterSiswaList.filter(s =>
+        s.nama.toLowerCase().includes(q) || s.nisn.includes(q)
+      );
+
+      if (hasil.length === 0) {
+        listEl.innerHTML = `<li class="px-4 py-2.5 text-xs text-slate-400">Nama/NISN tidak ditemukan.</li>`;
+      } else {
+        listEl.innerHTML = hasil.map(s => `
+          <li onclick="pilihSiswaLogin('${s.nisn}', '${s.nama.replace(/'/g, "\\'")}', '${s.kelas}')"
+              class="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer flex items-center justify-between transition">
+            <div>
+              <p class="font-bold text-slate-800 text-xs">${s.nama}</p>
+              <p class="text-[11px] text-slate-500 font-mono">NISN: ${s.nisn}</p>
+            </div>
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md">Kelas ${s.kelas}</span>
+          </li>
+        `).join("");
+      }
+      listEl.classList.remove("hidden");
+    }
+
+    function pilihSiswaLogin(nisn, nama, kelas) {
+      document.getElementById("search-user-input").value = `${nama} (${nisn})`;
+      document.getElementById("login-username").value = nisn;
+      document.getElementById("badge-siswa-text").innerText = `${nama} • Kelas ${kelas}`;
+      document.getElementById("selected-siswa-badge").classList.remove("hidden");
+      document.getElementById("autocomplete-siswa-list").classList.add("hidden");
+      document.getElementById("login-password").focus();
+    }
+
+    function resetPilihanSiswa() {
+      document.getElementById("search-user-input").value = "";
+      document.getElementById("login-username").value = "";
+      document.getElementById("selected-siswa-badge").classList.add("hidden");
+      document.getElementById("autocomplete-siswa-list").classList.add("hidden");
     }
 
     function togglePassword() {
@@ -737,8 +848,14 @@
 
     async function handleLoginSubmit(e) {
       e.preventDefault();
-      const username = document.getElementById("login-username").value.trim();
+      let username = document.getElementById("login-username").value.trim();
       const password = document.getElementById("login-password").value.trim();
+
+      // Jika siswa mengetik nama persis tanpa mengklik dropdown, otomatis cocokkan ke NISN
+      if (currentRoleLogin === "SISWA" && masterSiswaList.length > 0) {
+        const cocokNama = masterSiswaList.find(s => s.nama.toLowerCase() === username.toLowerCase());
+        if (cocokNama) username = cocokNama.nisn;
+      }
 
       const res = await callAPI({ action: "login", role: currentRoleLogin, username, password }, "Memverifikasi akun...");
       if (res.status !== "OK") return showToast(res.message, true);
@@ -762,6 +879,7 @@
       currentUser = null;
       ujianSedangBerjalan = false;
       clearInterval(timerInterval);
+      resetPilihanSiswa();
       document.getElementById("login-password").value = "";
       switchView("view-login");
     }
@@ -837,14 +955,12 @@
       }
       if (res.status !== "OK") return showToast(res.message, true);
 
-      // Masuk Mode Fullscreen Wajib
       aktifkanFullscreen();
 
       activeSesiId = res.id_sesi;
       daftarSoal = res.soal;
       currentIndex = 0;
 
-      // Pulihkan jawaban lokal jika sebelumnya sempat terputus koneksi
       const savedLocal = localStorage.getItem(`cat_ans_${activeSesiId}`);
       jawabanSiswa = savedLocal ? JSON.parse(savedLocal) : {};
       raguRagu = {};
@@ -901,7 +1017,6 @@
       document.getElementById("soal-tipe-badge").innerText = s.Tipe_Soal === "ESAI" ? "Soal Uraian / Esai" : "Pilihan Ganda";
       document.getElementById("soal-pertanyaan").innerText = s.Pertanyaan;
 
-      // Gambar Soal
       const imgBox = document.getElementById("soal-gambar-container");
       if (s.Gambar_URL) {
         document.getElementById("soal-gambar").src = s.Gambar_URL;
@@ -910,7 +1025,6 @@
         imgBox.classList.add("hidden");
       }
 
-      // Render Opsi PG vs Esai
       const boxPG = document.getElementById("soal-opsi-pg");
       const boxEsai = document.getElementById("soal-opsi-esai");
 
@@ -937,7 +1051,6 @@
         });
       }
 
-      // Tombol Navigasi Bawah
       document.getElementById("btn-prev").disabled = idx === 0;
       document.getElementById("btn-prev").classList.toggle("opacity-40", idx === 0);
 
@@ -1109,21 +1222,14 @@
       }
     }
 
-    // Sensor 1: Pindah Tab / Minimize / Buka Aplikasi Lain
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden && ujianSedangBerjalan) {
-        picuPelanggaran("KELUAR_LAYAR_TAB");
-      }
+      if (document.hidden && ujianSedangBerjalan) picuPelanggaran("KELUAR_LAYAR_TAB");
     });
 
-    // Sensor 2: Keluar dari Mode Layar Penuh
     document.addEventListener("fullscreenchange", () => {
-      if (!document.fullscreenElement && ujianSedangBerjalan) {
-        picuPelanggaran("KELUAR_LAYAR_TAB");
-      }
+      if (!document.fullscreenElement && ujianSedangBerjalan) picuPelanggaran("KELUAR_LAYAR_TAB");
     });
 
-    // Sensor 3: Deteksi Tombol Screenshot & Pintasan Terlarang
     window.addEventListener("keyup", (e) => {
       if (!ujianSedangBerjalan) return;
       if (e.key === "PrintScreen") {
@@ -1135,7 +1241,6 @@
 
     window.addEventListener("keydown", (e) => {
       if (!ujianSedangBerjalan) return;
-      // Blokir Win+Shift+S, Cmd+Shift+3/4, Ctrl+P, Ctrl+S, F12
       const isScreenCombo = (e.metaKey && e.shiftKey && ["s", "3", "4", "5"].includes(e.key.toLowerCase()));
       const isDevOrPrint = (e.ctrlKey && ["p", "s", "u"].includes(e.key.toLowerCase())) || e.key === "F12";
       if (isScreenCombo) {
@@ -1147,13 +1252,12 @@
       }
     });
 
-    // Blokir klik kanan selama ujian
     document.addEventListener("contextmenu", (e) => {
       if (ujianSedangBerjalan) e.preventDefault();
     });
 
     // =========================================================================
-    // 5. PANEL GURU & ADMIN
+    // 5. PANEL GURU & ADMIN (TERMASUK AUTOCOMPLETE 16 MAPEL)
     // =========================================================================
     function switchGuruTab(tabName) {
       document.querySelectorAll(".guru-panel").forEach(p => p.classList.add("hidden"));
@@ -1171,16 +1275,39 @@
     }
 
     async function initPanelGuru() {
-      // Muat 16 Mapel
-      const resMapel = await callAPI({ action: "getMapel" }, "Memuat data master...");
-      const selMapel = document.getElementById("new-mapel");
-      selMapel.innerHTML = "";
-      if (resMapel.data) {
-        resMapel.data.forEach(m => {
-          selMapel.innerHTML += `<option value="${m.Kode_Mapel}">${m.No}. ${m.Nama_Mapel}</option>`;
-        });
+      if (masterMapelList.length === 0) {
+        const resMapel = await callAPI({ action: "getMapel" }, "Memuat daftar 16 mapel...");
+        masterMapelList = resMapel.data || [];
       }
       loadDataGuru();
+    }
+
+    function filterAutocompleteMapel(keyword) {
+      const listEl = document.getElementById("autocomplete-mapel-list");
+      const q = keyword.trim().toLowerCase();
+
+      const hasil = masterMapelList.filter(m =>
+        m.Nama_Mapel.toLowerCase().includes(q) || m.Kode_Mapel.toLowerCase().includes(q)
+      );
+
+      if (hasil.length === 0) {
+        listEl.innerHTML = `<li class="px-3 py-2 text-slate-400">Mata pelajaran tidak ditemukan.</li>`;
+      } else {
+        listEl.innerHTML = hasil.map(m => `
+          <li onclick="pilihMapelGuru('${m.Kode_Mapel}', '${m.Nama_Mapel.replace(/'/g, "\\'")}')"
+              class="px-3 py-2 hover:bg-emerald-50 cursor-pointer flex items-center justify-between">
+            <span class="font-semibold text-slate-800">${m.No}. ${m.Nama_Mapel}</span>
+            <span class="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-sm font-bold">${m.Kode_Mapel}</span>
+          </li>
+        `).join("");
+      }
+      listEl.classList.remove("hidden");
+    }
+
+    function pilihMapelGuru(kode, nama) {
+      document.getElementById("search-mapel-input").value = `${nama} (${kode})`;
+      document.getElementById("new-mapel").value = kode;
+      document.getElementById("autocomplete-mapel-list").classList.add("hidden");
     }
 
     async function loadDataGuru() {
@@ -1216,11 +1343,23 @@
 
     async function handleBuatUjian(e) {
       e.preventDefault();
+      let kodeMapel = document.getElementById("new-mapel").value;
+      const ketikanMapel = document.getElementById("search-mapel-input").value.trim().toLowerCase();
+
+      // Jika guru mengetik tanpa mengklik daftar dropdown, cocokkan otomatis
+      if (!kodeMapel && ketikanMapel) {
+        const cocok = masterMapelList.find(m =>
+          m.Nama_Mapel.toLowerCase().includes(ketikanMapel) || m.Kode_Mapel.toLowerCase() === ketikanMapel
+        );
+        if (cocok) kodeMapel = cocok.Kode_Mapel;
+      }
+      if (!kodeMapel) return showToast("Silakan pilih Muatan Pelajaran dari daftar!", true);
+
       const res = await callAPI({
         action: "buatUjian",
         judul_ujian: document.getElementById("new-judul").value,
         jenis_ujian: document.getElementById("new-jenis").value,
-        kode_mapel: document.getElementById("new-mapel").value,
+        kode_mapel: kodeMapel,
         kelas_target: document.getElementById("new-kelas").value,
         durasi_menit: document.getElementById("new-durasi").value,
         token: document.getElementById("new-token").value,
@@ -1233,6 +1372,7 @@
       if (res.status === "OK") {
         showToast(res.message);
         e.target.reset();
+        document.getElementById("new-mapel").value = "";
         loadDataGuru();
       }
     }
@@ -1306,7 +1446,6 @@
       const res = await callAPI({ action: "getOlahNilai", id_ujian: idUjian, kelas: kelas }, "Memuat data peserta & nilai...");
       dataNilaiCache = res.data || [];
 
-      // Render Tabel Monitor Anti-Curang
       const tbMonitor = document.getElementById("tabel-monitor-siswa");
       tbMonitor.innerHTML = "";
       dataNilaiCache.forEach(s => {
@@ -1330,7 +1469,6 @@
         `;
       });
 
-      // Render Tabel Olah Nilai & Statistik
       const tbNilai = document.getElementById("tabel-olah-nilai");
       tbNilai.innerHTML = "";
       let totalSkor = 0, maxSkor = 0, minSkor = dataNilaiCache.length > 0 ? 100 : 0;
